@@ -3,7 +3,8 @@ import cv2
 import os
 import time
 import boto3
-s3 = boto3.resource('s3')
+s3 = boto3.resource('s3',aws_access_key_id='AKIAVJRGT2S4WXW4SYVB', aws_secret_access_key='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')
+
 bucket = s3.Bucket('yolo-input')
 
 if __name__ == "__main__":
