@@ -5,7 +5,7 @@ echo "Downloading config files..."
 mkdir cfg
 wget -O cfg/coco.data https://public-model.s3-ap-southeast-1.amazonaws.com/coco.data
 wget -O cfg/yolov3-data.cfg https://public-model.s3-ap-southeast-1.amazonaws.com/yolov3-data.cfg
-wget -O cfg/voc.data https://public-model.s3-ap-southeast-1.amazonaws.com/voc_v2.data
+wget -O cfg/voc.data https://public-model.s3-ap-southeast-1.amazonaws.com/voc.data
 
 echo "Modify config parameters to enable Testing mode"
 sed -i '/batch=64/c\# batch=64' cfg/yolov3-data.cfg
