@@ -13,7 +13,8 @@ if __name__ == "__main__":
     # for file_name in input_files:
         key = file.key
         print(key)
-        bucket.download_file(key, f"input/{key}")
+
+        bucket.download_file(key, 'input/{0}'.format(key))
         file_name = key
         if not file_name.lower().endswith(".jpg"):
             continue
