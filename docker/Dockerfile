@@ -38,6 +38,7 @@ RUN git clone https://github.com/NishantUpadhyay-BTC/YOLO3-4-Py.git
 WORKDIR /YOLO3-4-Py
 RUN pip3 install pkgconfig
 RUN pip3 install cython
+RUN pip3 install boto3
 RUN python3 setup.py build_ext --inplace
 
 ## Run test ##
