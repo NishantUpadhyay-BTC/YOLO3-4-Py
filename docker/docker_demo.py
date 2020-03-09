@@ -13,8 +13,7 @@ if __name__ == "__main__":
     # input_files = os.listdir("s3_input")
     for file in bucket.objects.all():
     # for file_name in input_files:
-        key = file.key
-        print(key)
+        key = file.key.encode('utf-8')
         # bucket.download_file(key, f"../s3_input/{key}")
         file_name = key
         if not file_name.lower().endswith(".jpg"):
