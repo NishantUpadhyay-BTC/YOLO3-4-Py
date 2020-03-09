@@ -7,7 +7,7 @@ s3 = boto3.resource('s3')
 bucket = s3.Bucket('yolo-input')
 
 if __name__ == "__main__":
-    net = Detector(bytes("cfg/yolov3-data.cfg", encoding="utf-8"), bytes("../weights/yolov3-data_final_26.weights", encoding="utf-8"), 0, bytes("../cfg/voc.data",encoding="utf-8"))
+    net = Detector(bytes("cfg/yolov3-data.cfg", encoding="utf-8"), bytes("weights/yolov3-data_final_26.weights", encoding="utf-8"), 0, bytes("cfg/voc.data",encoding="utf-8"))
 
     # input_files = os.listdir("s3_input")
     for file in bucket.objects.all():
