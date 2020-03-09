@@ -34,7 +34,7 @@ ENV LD_LIBRARY_PATH /darknet
 
 ## Download and compile YOLO3-4-Py ##
 WORKDIR /
-RUN git clone https://github.com/madhawav/YOLO3-4-Py.git
+RUN git clone https://github.com/NishantUpadhyay-BTC/YOLO3-4-Py.git
 WORKDIR /YOLO3-4-Py
 RUN pip3 install pkgconfig
 RUN pip3 install cython
