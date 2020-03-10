@@ -36,5 +36,5 @@ if __name__ == "__main__":
 
 
         cv2.imwrite(os.path.join("output",file_name), img)
-        s3.meta.client.upload_file(f"output/{key}", 'yolo-output', key )
+        s3.meta.client.upload_file('output/{0}'.format(key), 'yolo-output', key )
         os.remove(os.path.join("output",file_name))
