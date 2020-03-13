@@ -1,40 +1,76 @@
-from pydarknet import Detector, Image
 import cv2
-import os
-import time
+import numpy as np
+# import pytesseract
 import boto3
 s3 = boto3.resource('s3',aws_access_key_id=os.getenv("ACCESS_KEY"), aws_secret_access_key=os.getenv("ACCESS_SECRET"))
 bucket = s3.Bucket('yolo-input')
-if __name__ == "__main__":
-    net = Detector(bytes("cfg/yolov3-data.cfg", encoding="utf-8"), bytes("weights/yolov3-data_final_26.weights", encoding="utf-8"), 0, bytes("cfg/voc.data",encoding="utf-8"))
 
-    # input_files = os.listdir("input")
-    for file in bucket.objects.all():
-    # for file_name in input_files:
-        key = file.key
-        print(key)
+file = list(bucket.objects.all())[0]
+key = file.key
+bucket.download_file(key, 'input/{0}'.format(key))
 
-        bucket.download_file(key, 'input/{0}'.format(key))
-        file_name = key
-        if not file_name.lower().endswith(".jpg"):
-            continue
+net = cv2.dnn.readNetFromDarknet("/home/botree/study/amass2/YOLO/model_training/merge_26/docker/yolov3-data_final_26.weights","/home/botree/study/amass2/YOLO/model_training/merge_26/docker/yolov3-data.cfg")
+print(net)
 
-        print("File:", key)
-        img = cv2.imread(os.path.join("input",key))
-        img2 = Image(img)
+classes = ["shipper","consignee","email"]
+layer_names = net.getLayerNames()
 
-        start_time = time.time()
-        results = net.detect(img2)
-        end_time = time.time()
-
-        print("Elapsed Time:", end_time-start_time)
-
-        for cat, score, bounds in results:
-            x, y, w, h = bounds
-            cv2.rectangle(img, (int(x - w / 2), int(y - h / 2)), (int(x + w / 2), int(y + h / 2)), (255, 0, 0), thickness=2)
-            cv2.putText(img,str(cat.decode("utf-8")),(int(x),int(y)),cv2.FONT_HERSHEY_DUPLEX,4,(0,0,255), thickness=1)
+outputlayers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+colors= np.random.uniform(0,255,size=(len(classes),3))
 
 
-        cv2.imwrite(os.path.join("output",file_name), img)
-        s3.meta.client.upload_file('output/{0}'.format(key), 'yolo-output', key )
-        os.remove(os.path.join("output",file_name))
+img = cv2.imread(os.path.join("input",key))
+# img = cv2.resize(img,None,fx=0.4,fy=0.3)
+height,width,channels = img.shape
+
+blob = cv2.dnn.blobFromImage(img,0.00392,(416,416),(0,0,0),True,crop=False)
+
+net.setInput(blob)
+outs = net.forward(outputlayers)
+#print(outs[1])
+
+
+#Showing info on screen/ get confidence score of algorithm in detecting an object in blob
+class_ids=[]
+confidences=[]
+boxes=[]
+for out in outs:
+    for detection in out:
+        scores = detection[5:]
+        class_id = np.argmax(scores)
+        confidence = scores[class_id]
+        if confidence > 0.5:
+            #onject detected
+            center_x= int(detection[0]*width)
+            center_y= int(detection[1]*height)
+            w = int(detection[2]*width)
+            h = int(detection[3]*height)
+
+            #cv2.circle(img,(center_x,center_y),10,(0,255,0),2)
+            #rectangle co-ordinaters
+            x=int(center_x - w/2)
+            y=int(center_y - h/2)
+            #cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+
+            boxes.append([x,y,w,h]) #put all rectangle areas
+            confidences.append(float(confidence)) #how confidence was that object detected and show that percentage
+            class_ids.append(class_id) #name of the object tha was detected
+
+indexes = cv2.dnn.NMSBoxes(boxes,confidences,0.4,0.6)
+
+
+font = cv2.FONT_HERSHEY_PLAIN
+for i in range(len(boxes)):
+    print(i)
+    if i in indexes:
+        x,y,w,h = boxes[i]
+        label = str(classes[class_ids[i]])
+        color = colors[i]
+        cv2.rectangle(img,(x,y),(x+w,y+h),color,2)
+        cv2.putText(img,label,(x,y+30),font,1,(255,255,255),2)
+        crop_image = img[y:y+h,x:x+w]
+        # value = pytesseract.image_to_string(crop_image,lang="chi+chi_tra+eng", config=("--psm 6"))
+        # print(value)
+cv2.imshow("Image",img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
