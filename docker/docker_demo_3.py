@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 # import pytesseract
 import boto3
 s3 = boto3.resource('s3',aws_access_key_id=os.getenv("ACCESS_KEY"), aws_secret_access_key=os.getenv("ACCESS_SECRET"))
